@@ -73,15 +73,70 @@ export const useProjectsStore = defineStore("projects", () => {
   return total === 0 ? 0 : Math.round((completed / total) * 100);
 });
 
-  return {
-    projects,
-    selectedProjectId,
-    progress,
-    selectedProject,
-    selectProject,
-    deselectProject,
-    addProject,
-    addTaskToProject,
-    toggleTaskCompletion,
-  };
+function editProjectName(projectId, newName) {
+  const project = projects.value.find((p) => p.id === projectId);
+  if (project) {
+    project.name = newName;
+    saveToLocalStorage();
+  }
+}
+
+function editTaskName(projectId, taskId, newName) {
+  const project = projects.value.find((p) => p.id === projectId);
+  if (project) {
+    const task = project.tasks.find((t) => t.id === taskId);
+    if (task) {
+      task.name = newName;
+      saveToLocalStorage();
+    }
+  }
+}
+
+function deleteTask(projectId, taskId) {
+  const project = projects.value.find((p) => p.id === projectId);
+  if (project) {
+    project.tasks = project.tasks.filter((t) => t.id !== taskId);
+    saveToLocalStorage();
+  }
+}
+
+function deleteProject(projectId) {
+  projects.value = projects.value.filter((p) => p.id !== projectId);
+  if (selectedProjectId.value === projectId) {
+    selectedProjectId.value = null;
+  }
+  saveToLocalStorage();
+}
+
+function saveToLocalStorage() {
+  localStorage.setItem('projects', JSON.stringify(projects.value));
+}
+
+function loadFromLocalStorage() {
+  const data = localStorage.getItem('projects');
+  if (data) {
+    projects.value = JSON.parse(data);
+  }
+}
+
+// Cargar al iniciar
+loadFromLocalStorage();
+
+return {
+  projects,
+  selectedProjectId,
+  progress,
+  selectedProject,
+  selectProject,
+  deselectProject,
+  addProject,
+  addTaskToProject,
+  toggleTaskCompletion,
+  editProjectName,
+  editTaskName,
+  deleteTask,
+  deleteProject,
+  saveToLocalStorage,
+  loadFromLocalStorage,
+};
 });
